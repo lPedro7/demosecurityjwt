@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form id="loginform">
+    Username: <input type="text" name="username"> <br>
+    Password: <input type="password" name="password"> <br>
+    <input type="submit" value="login">
+</form>
+
+<button onclick="makePrivateRequest()"> Private request </button>
+
+<div id="secretdiv"></div>
+
+<script>
+    function showResponse(res) {
+        secretdiv.innerHTML = res['message'];
+    }
+
+    function handleErrors(response){
+        if (!response.ok){
+
+        }
+    }
+
+    async function makePrivateRequest() {
+        let token = localStorage.getItem('token');
+        await fetch('/private/url', {
+            method: 'GET',
+            headers: {
+                'authorization': 'Bearer ' + token
+            }
+        })
+            .then( (res) => { return res.json() })
+            .then( (res) => { showResponse(res) });
+    }
+
+    function saveToken(res) {
+        loginform.remove();
+        localStorage.setItem("token", res);
+    }
+
+    loginform.onsubmit = async(e) => {
+        e.preventDefault();
+        let fdata = new FormData(loginform);
+        console.log(fdata.get("username"));
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({username: fdata.get('username'), password: fdata.get('password')})
+        })
+            .then( (res) => { saveToken(res.headers.get('Authorization')) });
+    }
+</script>
+
+</body>
+</html>
